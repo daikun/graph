@@ -1,0 +1,173 @@
+#include<iostream>
+#include<vector>
+#include<string>
+
+#define MAXVEX 100//最大顶点数
+#define INFINITY 65535//表示正无穷，用于有向图
+using namespace std;
+
+bool visit[MAXVEX];
+bool Mat_visit[MAXVEX];
+
+typedef struct MGraph  //领接矩阵
+{
+	char vexs[MAXVEX];
+	int arc[MAXVEX][MAXVEX];
+	int numVertex, numEdges;
+}MGraph;
+
+
+
+//领接表
+typedef struct EdgeNode  //边表结点
+{
+	int adjvex; //存储该顶点对应的下标
+	int Weight; //存储权重
+	EdgeNode* Next; //指向下一个结点的指针
+}EdgeNode;
+
+typedef struct VertexNdoe  //顶点表结点
+{
+	char data; //顶点信息
+	EdgeNode* firstedge;//边表头指针
+}VertexNdoe;
+
+typedef struct GraphAdjList
+{
+	VertexNdoe adjLink[MAXVEX];
+	int numVertexes, numEdges;//图中顶点数与边数
+}GraphAdjList;
+
+
+//------------------图的存储方法
+
+//1、领接矩阵法（一维数组和二维数组分别存储  结点和边）
+//创建无向网图
+void CreateMGraph(MGraph& G)
+{
+	int row, col, quan;
+	cout << "请输入节点数与边数:" << endl;
+	cout << "结点数目:";  cin >> G.numVertex;
+	cout << "边数目:";  cin >> G.numEdges;
+	//创建结点
+	for (int i = 0; i < G.numVertex; i++)
+	{
+		cin >> G.vexs[i];
+	}
+	//首先将领接矩阵中的所有数据置为正无穷
+	for (int i = 0; i < G.numVertex; i++)
+	{
+		for (int j = 0; j < G.numVertex; j++)
+		{
+			G.arc[i][j] = INFINITY;
+		}
+	}
+	for (int k = 0; k < G.numVertex; k++)
+	{
+		cout << "请输入结点的x,y坐标值:" << endl;
+		cin >> row;   cin >> col;
+		cout << "请输入边上的权:";
+		cin >> quan;
+		G.arc[row][col] = quan;
+		G.arc[col][row] = G.arc[row][col];
+	}
+}
+
+
+//2、邻接表
+void CreateALGraph(GraphAdjList& G)
+{
+
+	char content;
+	int row, col;
+	EdgeNode* e;
+	cout << "输入顶点数与边数" << endl;
+	cin >> G.numVertexes;   cin >> G.numEdges;
+	//给顶点中的数据赋初值，指针指向空地址
+	for (int i = 0; i < G.numVertexes; i++)
+	{
+		cout << "请输入结点信息:";  cin >> content;
+		G.adjLink[i].data = content;
+		G.adjLink[i].firstedge = NULL;
+	}
+	//使用头插法，建立边表
+	for (int k = 0; k < G.numEdges; k++)
+	{
+		cout << "请输入边的信息:" << endl;
+		cin >> row;   cin >> col;
+		e = new EdgeNode;
+		
+		e->adjvex = col;
+		e->Next = G.adjLink[row].firstedge;
+		G.adjLink[row].firstedge = e;
+
+		e = new EdgeNode;
+		e->adjvex = row;
+		e->Next = G.adjLink[col].firstedge;
+		G.adjLink[col].firstedge = e;
+	}
+}
+
+
+
+//------------------图的遍历方法
+
+//深度优先遍历
+//领接矩阵
+void DFS(MGraph& G, int i)
+{
+	int j = 0;
+	visit[i] = true;
+	for (int j = 0; j < G.numVertex; j++)
+		if (G.arc[i][j] == 1 && !visit[j])
+		{
+			DFS(G, j);
+		}
+}
+
+void DFSTraverse(MGraph& G, int i)
+{
+	for (int i = 0; i < G.numVertex; i++)
+		visit[i] = false;
+	for (int i = 0; i < G.numVertex; i++)
+	{
+		if (visit[i] == false)
+			DFS(G, i);
+	}
+}
+
+
+//领接表
+void Mat_DFS(GraphAdjList& GL,int i)
+{
+	visit[i] = true;
+	EdgeNode* p;
+	p = GL.adjLink[i].firstedge;
+	while (p)
+	{
+		if (Mat_visit[p->adjvex] == false)
+			Mat_DFS(GL, p->adjvex);//递归调用
+		p = p->Next;
+	}
+}
+
+void Mat_DFSTraverse(GraphAdjList& GL, int i)
+{
+	for (int i = 0; i < GL.numVertexes; i++)
+	{
+		Mat_visit[i] = false;
+	}
+	for (int i = 0; i < GL.numVertexes; i++)
+		if (Mat_visit[i] == false)
+			Mat_DFS(GL, i);
+}
+
+
+
+
+int main()
+{
+	int a[10][10] = { 0 };
+	for (int i = 0; i < 100; i++)
+		cout << *(*a + i) << endl;
+}
